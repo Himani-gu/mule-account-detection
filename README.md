@@ -20,6 +20,28 @@ proactively detect and prevent misuse of mule accounts.
 ---
 
 ## Project Structure
+markdown# Mule Account Detection — AI/ML Classification System
+
+An end-to-end machine learning pipeline to detect suspicious and mule accounts
+involved in cyber-enabled financial fraud using transactional behavioural data.
+
+---
+
+## Problem Statement
+
+Banks face a growing number of fraud cases where mule accounts are used to
+receive, transfer, and conceal fraudulent funds across multiple banking channels.
+Traditional rule-based systems fail to catch evolving fraud patterns in real time.
+
+This project builds an AI/ML-powered classification system that learns
+behavioural and transactional patterns from financial data to automatically
+flag suspicious accounts. The system includes anomaly detection, predictive
+risk scoring, threshold tuning, and SHAP-based explainability to help banks
+proactively detect and prevent misuse of mule accounts.
+
+---
+
+## Project Structure
 mule-account-detection/
 
 ├── data/
@@ -70,19 +92,41 @@ mule-account-detection/
 
 │   └── threshold.pkl               ← tuned decision threshold
 
-├── frontend/
+├── frontend-react/                 ← React + Tailwind CSS frontend
 
-│   ├── index.html                  ← dashboard UI
+│   ├── src/
 
-│   ├── style.css                   ← styling
+│   │   ├── components/
 
-│   └── app.js                      ← frontend logic
+│   │   │   ├── Sidebar.jsx
+
+│   │   │   ├── KpiCard.jsx
+
+│   │   │   └── StatusPill.jsx
+
+│   │   ├── pages/
+
+│   │   │   ├── Dashboard.jsx
+
+│   │   │   ├── ScoreAccount.jsx
+
+│   │   │   ├── BatchUpload.jsx
+
+│   │   │   └── Insights.jsx
+
+│   │   ├── App.jsx
+
+│   │   └── index.css
+
+│   ├── vite.config.js
+
+│   └── package.json
 
 ├── reports/
 
 │   ├── metrics.json                ← final evaluation metrics
 
-│   └── figures/                    ← all plots and charts
+│   └── figures/
 
 │       ├── class_distribution.png
 
@@ -104,21 +148,25 @@ mule-account-detection/
 
 ├── config.py                       ← all paths and settings
 
+├── render.yaml                     ← Render deployment config
+
 ├── requirements.txt                ← dependencies
 
 └── README.md
+
+---
 ---
 
 ## Dataset
 
-| Property              | Value                        |
-|-----------------------|------------------------------|
-| Total accounts        | 9,082                        |
-| Total raw features    | ~4,000                       |
-| Target variable       | F3924 (0 = Legit, 1 = Fraud) |
-| Fraud accounts        | 81  (0.89%)                  |
-| Legitimate accounts   | 9,001 (99.11%)               |
-| Class imbalance ratio | 112 : 1                      |
+| Property              | Value                         |
+|-----------------------|-------------------------------|
+| Total accounts        | 9,082                         |
+| Total raw features    | ~4,000                        |
+| Target variable       | F3924 (0 = Legit, 1 = Fraud)  |
+| Fraud accounts        | 81  (0.89%)                   |
+| Legitimate accounts   | 9,001 (99.11%)                |
+| Class imbalance ratio | 112 : 1                       |
 
 ---
 
@@ -134,7 +182,7 @@ mule-account-detection/
 - Dropped 1,138 columns with more than 50% missing values
 - Removed 1 constant column with zero variance
 - Filled remaining null values with column median
-- **Detected and removed F3912** — a post-fraud system flag that caused
+- **Detected and removed F3912** — a post-fraud system flag causing
   target leakage (single-feature AUC = 1.0, fraud mean = 0.975 vs legit mean = 0.0003)
 - Removed features with zero value overlap between fraud and legit accounts
 - Applied SelectKBest (f_classif) fitted **only on training data** to prevent
@@ -152,12 +200,12 @@ mule-account-detection/
 ### 4. Model Training
 Four models trained and compared with heavy regularisation:
 
-| Model               | Key regularisation settings                        |
-|---------------------|----------------------------------------------------|
-| Logistic Regression | C=0.01, class_weight=balanced                      |
-| Random Forest       | max_depth=3, min_samples_leaf=15, balanced_subsample|
-| XGBoost             | max_depth=2, reg_alpha=10, reg_lambda=20, gamma=10 |
-| LightGBM            | max_depth=2, num_leaves=4, min_child_samples=30    |
+| Model               | Key regularisation settings                         |
+|---------------------|-----------------------------------------------------|
+| Logistic Regression | C=0.01, class_weight=balanced                       |
+| Random Forest       | max_depth=3, min_samples_leaf=15, balanced_subsample |
+| XGBoost             | max_depth=2, reg_alpha=10, reg_lambda=20, gamma=10  |
+| LightGBM            | max_depth=2, num_leaves=4, min_child_samples=30     |
 
 - 5-fold stratified cross-validation used as primary evaluation method
 - Best model selected by AUC-PR (most reliable metric for imbalanced data)
@@ -165,19 +213,19 @@ Four models trained and compared with heavy regularisation:
 
 ### 5. Evaluation
 
-| Metric           | Value    | Notes                                  |
-|------------------|----------|----------------------------------------|
-| AUC-ROC          | ~0.85    | Strong discrimination ability          |
-| AUC-PR           | ~0.45    | Realistic for 112:1 imbalance          |
-| True Positives   | 11       | Fraud accounts correctly caught        |
-| False Positives  | 285      | Legit accounts flagged for review      |
-| False Negatives  | 5        | Fraud accounts missed                  |
-| True Negatives   | 1,516    | Legit accounts correctly cleared       |
-| Recall (fraud)   | 68.75%   | 11 out of 16 fraud cases caught        |
-| Threshold        | Tuned    | Via precision-recall curve             |
+| Metric           | Value   | Notes                                   |
+|------------------|---------|-----------------------------------------|
+| AUC-ROC          | ~0.85   | Strong discrimination ability           |
+| AUC-PR           | ~0.45   | Realistic for 112:1 imbalance           |
+| True Positives   | 11      | Fraud accounts correctly caught         |
+| False Positives  | 285     | Legit accounts flagged for review       |
+| False Negatives  | 5       | Fraud accounts missed                   |
+| True Negatives   | 1,516   | Legit accounts correctly cleared        |
+| Recall (fraud)   | 68.75%  | 11 out of 16 fraud cases caught         |
+| Threshold        | Tuned   | Via precision-recall curve              |
 
 #### Why these numbers are realistic and honest
-- **FN = 5** means 5 fraud accounts were missed — expected for only 81 total fraud cases
+- **FN = 5** means 5 fraud accounts were missed — expected for 81 total fraud cases
 - **FP = 285** means the model is cautious — borderline accounts go to manual review
 - In real banking, high recall (catching fraud) is prioritised over low false positives
 - A perfect score of FN=0, FP=0 on this dataset = **overfitting**, not skill
@@ -185,7 +233,7 @@ Four models trained and compared with heavy regularisation:
 ### 6. Explainability (SHAP)
 Top features driving fraud detection after leakage removal:
 
-| Rank | Feature | Interpretation                                     |
+| Rank | Feature | Interpretation                                      |
 |------|---------|-----------------------------------------------------|
 | 1    | F3898   | Strongest remaining signal after F3912 removed      |
 | 2    | F3914   | Captures unusual transaction volume patterns        |
@@ -202,45 +250,42 @@ Top features driving fraud detection after leakage removal:
 ## Key Findings & Lessons Learned
 
 ### Target Leakage Detection
-**F3912** was identified as a post-fraud system flag — a column that was set
+**F3912** was identified as a post-fraud system flag — a column set
 **after** an account was confirmed as fraudulent, not before. Including it
 gave a single-feature AUC of 1.0 and caused every model to achieve 100%
 accuracy. This is a textbook case of target leakage and would have made the
 model completely useless in production since the flag would not exist for
-new, unseen accounts.
-
-Removing it dropped performance to realistic levels — exactly what a
-production-ready fraud model should look like.
+new, unseen accounts. Removing it dropped performance to realistic levels.
 
 ### Why SMOTE Was Removed
-With only 81 real fraud cases, SMOTE generated synthetic samples that were
-too similar to real fraud samples, creating artificially perfect decision
-boundaries. The correct approach for severe imbalance with few samples is
+With only 81 real fraud cases, SMOTE generated synthetic samples too similar
+to real fraud samples, creating artificially perfect decision boundaries.
+The correct approach for severe imbalance with few samples is
 `class_weight='balanced'` which adjusts loss function weights without
 generating fake data.
 
 ### Why AUC-PR Was Used Over Accuracy
 On a 112:1 imbalanced dataset, a model that labels every account as legitimate
-achieves 99.1% accuracy. Accuracy is therefore meaningless. AUC-PR measures
+achieves 99.1% accuracy — making accuracy meaningless. AUC-PR measures
 performance specifically on the minority fraud class and is the industry
 standard metric for fraud detection.
 
 ---
 
-## How to Run
+## How to Run Locally
 
 ### 1. Clone and set up environment
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Himani-gu/mule-account-detection.git
 cd mule-account-detection
 python -m venv venv
-venv\Scripts\activate        # Windows
+venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
 ### 2. Add dataset
-Place your raw dataset inside:
-data/raw/dataset.csv
+[text](../Users/Himani/Downloads/DataSet.csv)
+
 
 ### 3. Run notebooks in order
 01_eda.ipynb
@@ -252,42 +297,55 @@ data/raw/dataset.csv
 04_evaluation.ipynb
 
 05_explainability.ipynb
-
-### 4. Launch the dashboard
+### 4. Start FastAPI backend
 ```bash
-uvicorn app:app --reload
+uvicorn app:app --reload --port 8001
 ```
-Open your browser at `http://localhost:8000`
+
+### 5. Start React frontend
+```bash
+cd frontend-react
+npm install
+npm run dev
+```
+
+Open your browser at `http://localhost:5173`
 
 ---
 
 ## Dashboard Features
 
-| Page          | Description                                          |
-|---------------|------------------------------------------------------|
-| Dashboard     | KPI cards, SHAP bar chart, class distribution chart  |
-| Score account | Enter feature values and get a live risk score       |
-| Batch upload  | Upload CSV to score multiple accounts at once        |
-| SHAP insights | Feature importance with plain-English explanations   |
+| Page          | Description                                           |
+|---------------|-------------------------------------------------------|
+| Dashboard     | KPI cards, SHAP bar chart, class distribution chart   |
+| Score account | Enter feature values and get a live risk score        |
+| Batch upload  | Upload CSV to score multiple accounts at once         |
+| SHAP insights | Feature importance with plain-English explanations    |
 
 ---
 
 ## Tech Stack
 
-| Purpose               | Library / Tool                          |
-|-----------------------|-----------------------------------------|
-| Data manipulation     | pandas, numpy                           |
-| Machine learning      | scikit-learn, xgboost, lightgbm         |
-| Imbalance handling    | class_weight (no SMOTE)                 |
-| Explainability        | shap                                    |
-| Visualisation         | matplotlib, seaborn                     |
-| Model persistence     | joblib                                  |
-| Backend API           | FastAPI, uvicorn                        |
-| Frontend              | HTML, CSS, JavaScript, Chart.js         |
+| Purpose               | Library / Tool                            |
+|-----------------------|-------------------------------------------|
+| Data manipulation     | pandas, numpy                             |
+| Machine learning      | scikit-learn, xgboost, lightgbm           |
+| Imbalance handling    | class_weight (no SMOTE)                   |
+| Explainability        | shap                                      |
+| Visualisation         | matplotlib, seaborn                       |
+| Model persistence     | joblib                                    |
+| Backend API           | FastAPI, uvicorn                          |
+| Frontend              | React, Tailwind CSS, Recharts, Chart.js   |
+| Deployment            | Render (backend), Vercel (frontend)       |
 
 ---
 
 ## Requirements
+## Requirements
+fastapi
+
+uvicorn
+
 pandas
 
 numpy
@@ -310,11 +368,9 @@ jupyter
 
 joblib
 
-fastapi
-
-uvicorn
-
 python-multipart
+
+pydantic
 
 ---
 
@@ -328,6 +384,5 @@ financial fraud detection including:
 - Proper train/test discipline — all fitting done on training data only
 - Threshold tuning using precision-recall curves instead of default 0.5
 - SHAP explainability so every flagged account can be justified to compliance
-- A deployed FastAPI backend with a live scoring dashboard
-
-Copy this entire content into your README.md file. This version is complete, honest, and tells a strong story that will impress in interviews — especially the leakage detection and SMOTE removal sections which show real ML engineering judgment.
+- React + Tailwind CSS dashboard with live risk scoring
+- Deployed FastAPI backend with REST API endpoints
