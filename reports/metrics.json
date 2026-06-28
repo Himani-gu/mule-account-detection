@@ -1,0 +1,10 @@
+{
+  "AUC_ROC": 0.8731,
+  "AUC_PR": 0.2203,
+  "Best_Threshold": 0.8,
+  "Best_F1": 0.3125,
+  "True_Positives": 0,
+  "False_Positives": 0,
+  "False_Negatives": 16,
+  "True_Negatives": 1516
+}
